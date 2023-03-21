@@ -16,10 +16,13 @@ Les versions séquentielles des programmes à paralléliser se trouvent avec le 
 Dans le fichier texte qui accompagne votre travail, répondez aux questions suivantes :
 
 - Quel est le nombre de coeurs physiques de votre machine ?
+
 8
 - Quel est le nombre de coeurs logiques de votre machine ?
+
 16
 - Quelle est la quantité de mémoire cache L2 et L3 de votre machine ?
+
 Cache L1d : 384 KiB
 Cache L1i : 256 KiB
 Cache L2 : 10 MiB
