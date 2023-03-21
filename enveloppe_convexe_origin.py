@@ -76,6 +76,9 @@ for r in range(nbre_repet):
     t2 = time.time()
     elapsed_convexhull += t2 - t1
 
+    enveloppe = calcul_enveloppe(enveloppe)
+
+
 print(f"Temps pris pour la generation d'un nuage de points : {elapsed_generation/nbre_repet}")
 print(f"Temps pris pour le calcul de l'enveloppe convexe : {elapsed_convexhull/nbre_repet}")
 print(f"Temps total : {sum((elapsed_generation, elapsed_convexhull))/nbre_repet}")

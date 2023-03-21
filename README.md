@@ -128,12 +128,17 @@ des sommets définissant les deux enveloppes convexes.
 Sans parallélisation, la génération de points prend 0.0172 s et le calcul de l'enveloppe convexe prend
 2,9552 s.
 
-J'ai un bug que je n'ai pas réussi à corriger : il manque 3 points dans l'enveloppe convexe. 
-
+Il semblerait que la fonction de calcul d'enveloppe convexe soit erronée (à cause
+des arrondis) : sans mpi, ajouter `enveloppe = calcul_enveloppe(enveloppe)` a pour conséquence
+de retirer 3 points de l'enveloppe convexe. La fonction de vérification ne fonction alors plus.
 
 2. Dans un deuxième temps, en utilisant un algorithme de type hypercube, de sorte qu’un processus fusionne son enveloppe convexe avec le processus se trouvant dans la direction d, mettre en œuvre l’algorithme sur `2**n` processus.
 
+
+
 3. Mesurer les speed ups de votre algorithme en suivant le critère de Amdhal et de Gustafson. Interprétez votre résultat au regard de la complexité de l'algorithme et commentez.
+
+_Non faite_
 
 ---
 

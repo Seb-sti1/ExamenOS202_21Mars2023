@@ -78,12 +78,19 @@ size = comm.Get_size()
 if rank == 0:
     print()
 
+# on vérifie qu'on a une puissance de 2
+n = math.log2(size)
+assert int(n) == n
+n = int(n)
+
 # on répartit la génération pour avoir autant de points par processus
 local_range = range(rank * taille_nuage // size, (rank + 1) * taille_nuage // size)
 if rank == size - 1:
     local_range = range(rank * taille_nuage // size, taille_nuage)
 
 for r in range(nbre_repet):
+    comm.Barrier()
+
     # on crée la partie du nuage pour chaque processus
     t1 = time.time()
     nuage_local = np.array(np.array([[resolution_x * i * math.cos(48371. * i) / taille_nuage for i in local_range],
@@ -98,22 +105,28 @@ for r in range(nbre_repet):
     t2 = time.time()
     elapsed_convexhull += t2 - t1
 
-    merged_enveloppe = None
-    if rank == 0:
-        comm.isend(local_enveloppe, dest=1)
-        other_local_enveloppe = comm.recv(source=1)
-        merged_enveloppe = np.concatenate((local_enveloppe, other_local_enveloppe), axis=0)
-    elif rank == 1:
-        comm.isend(local_enveloppe, dest=0)
-        other_local_enveloppe = comm.recv(source=0)
-        merged_enveloppe = np.concatenate((local_enveloppe, other_local_enveloppe), axis=0)
+    enveloppe = local_enveloppe
+    # on fait les fusions est les nouveaux calculs d'enveloppe
+    for i in range(n):  # on a n-étapes de fusion
+        comm.Barrier()
 
-    # il semblerait que des points de l'enveloppe sont perdus ici. Je n'ai pas reussi à corriger ce
-    # bug
-    t1 = time.time()
-    enveloppe = calcul_enveloppe(merged_enveloppe)
-    t2 = time.time()
-    elapsed_convexhull += t2 - t1
+        merged_enveloppe = None
+
+        paire = rank + (1 << i) if (rank & (1 << i)) == 0 else rank - (1 << i)
+
+        pprint("paired with ", paire)
+
+        # on échange les enveloppes
+        comm.isend(enveloppe, dest=paire)
+        other_local_enveloppe = comm.recv(source=paire)
+        merged_enveloppe = np.concatenate((enveloppe, other_local_enveloppe), axis=0)
+
+        # il semblerait que des points de l'enveloppe sont perdus ici. Je n'ai pas reussi à corriger ce
+        # bug
+        t1 = time.time()
+        enveloppe = calcul_enveloppe(merged_enveloppe)  # on recalcule l'enveloppe
+        t2 = time.time()
+        elapsed_convexhull += t2 - t1
 
 pprint(f"Temps pris pour la generation d'un nuage de points : {elapsed_generation / nbre_repet}")
 pprint(f"Temps pris pour le calcul de l'enveloppe convexe : {elapsed_convexhull / nbre_repet}")
