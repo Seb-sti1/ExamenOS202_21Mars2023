@@ -1,7 +1,7 @@
-import numpy as np
 import time
+
 import matplotlib.pyplot as plt
-import sys
+import numpy as np
 from mpi4py import MPI
 
 nombre_cas: int = 256
